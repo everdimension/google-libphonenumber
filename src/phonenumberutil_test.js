@@ -1,560 +1,4 @@
-/**
- * @license
- * Copyright (C) 2010 The Libphonenumber Authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/**
- * @fileoverview  Unit tests for the PhoneNumberUtil.
- *
- * Note that these tests use the metadata contained in metadatafortesting.js,
- * not the normal metadata files, so should not be used for regression test
- * purposes - these tests are illustrative only and test functionality.
- *
- * @author Nikolaos Trogkanis
- */
-
-goog.require('goog.array');
-goog.require('goog.testing.jsunit');
-goog.require('i18n.phonenumbers.PhoneNumberUtil');
-goog.require('i18n.phonenumbers.RegionCode');
-
-
-/** @type {i18n.phonenumbers.PhoneNumberUtil} */
-var phoneUtil = i18n.phonenumbers.PhoneNumberUtil.getInstance();
-
-
-// Set up some test numbers to re-use.
-// TODO: Rewrite this as static functions that return new numbers each time to
-// avoid any risk of accidental changes to mutable static state affecting many
-// tests.
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var ALPHA_NUMERIC_NUMBER = new i18n.phonenumbers.PhoneNumber();
-ALPHA_NUMERIC_NUMBER.setCountryCode(1);
-ALPHA_NUMERIC_NUMBER.setNationalNumber(80074935247);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var AE_UAN = new i18n.phonenumbers.PhoneNumber();
-AE_UAN.setCountryCode(971);
-AE_UAN.setNationalNumber(600123456);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var AR_MOBILE = new i18n.phonenumbers.PhoneNumber();
-AR_MOBILE.setCountryCode(54);
-AR_MOBILE.setNationalNumber(91187654321);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var AR_NUMBER = new i18n.phonenumbers.PhoneNumber();
-AR_NUMBER.setCountryCode(54);
-AR_NUMBER.setNationalNumber(1187654321);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var AU_NUMBER = new i18n.phonenumbers.PhoneNumber();
-AU_NUMBER.setCountryCode(61);
-AU_NUMBER.setNationalNumber(236618300);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var BS_MOBILE = new i18n.phonenumbers.PhoneNumber();
-BS_MOBILE.setCountryCode(1);
-BS_MOBILE.setNationalNumber(2423570000);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var BS_NUMBER = new i18n.phonenumbers.PhoneNumber();
-BS_NUMBER.setCountryCode(1);
-BS_NUMBER.setNationalNumber(2423651234);
-
-
-// Note that this is the same as the example number for DE in the metadata.
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var DE_NUMBER = new i18n.phonenumbers.PhoneNumber();
-DE_NUMBER.setCountryCode(49);
-DE_NUMBER.setNationalNumber(30123456);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var DE_SHORT_NUMBER = new i18n.phonenumbers.PhoneNumber();
-DE_SHORT_NUMBER.setCountryCode(49);
-DE_SHORT_NUMBER.setNationalNumber(1234);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var GB_MOBILE = new i18n.phonenumbers.PhoneNumber();
-GB_MOBILE.setCountryCode(44);
-GB_MOBILE.setNationalNumber(7912345678);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var GB_NUMBER = new i18n.phonenumbers.PhoneNumber();
-GB_NUMBER.setCountryCode(44);
-GB_NUMBER.setNationalNumber(2070313000);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var IT_MOBILE = new i18n.phonenumbers.PhoneNumber();
-IT_MOBILE.setCountryCode(39);
-IT_MOBILE.setNationalNumber(345678901);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var IT_NUMBER = new i18n.phonenumbers.PhoneNumber();
-IT_NUMBER.setCountryCode(39);
-IT_NUMBER.setNationalNumber(236618300);
-IT_NUMBER.setItalianLeadingZero(true);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var JP_STAR_NUMBER = new i18n.phonenumbers.PhoneNumber();
-JP_STAR_NUMBER.setCountryCode(81);
-JP_STAR_NUMBER.setNationalNumber(2345);
-
-
-// Numbers to test the formatting rules from Mexico.
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var MX_MOBILE1 = new i18n.phonenumbers.PhoneNumber();
-MX_MOBILE1.setCountryCode(52);
-MX_MOBILE1.setNationalNumber(12345678900);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var MX_MOBILE2 = new i18n.phonenumbers.PhoneNumber();
-MX_MOBILE2.setCountryCode(52);
-MX_MOBILE2.setNationalNumber(15512345678);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var MX_NUMBER1 = new i18n.phonenumbers.PhoneNumber();
-MX_NUMBER1.setCountryCode(52);
-MX_NUMBER1.setNationalNumber(3312345678);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var MX_NUMBER2 = new i18n.phonenumbers.PhoneNumber();
-MX_NUMBER2.setCountryCode(52);
-MX_NUMBER2.setNationalNumber(8211234567);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var NZ_NUMBER = new i18n.phonenumbers.PhoneNumber();
-NZ_NUMBER.setCountryCode(64);
-NZ_NUMBER.setNationalNumber(33316005);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var SG_NUMBER = new i18n.phonenumbers.PhoneNumber();
-SG_NUMBER.setCountryCode(65);
-SG_NUMBER.setNationalNumber(65218000);
-
-
-// A too-long and hence invalid US number.
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var US_LONG_NUMBER = new i18n.phonenumbers.PhoneNumber();
-US_LONG_NUMBER.setCountryCode(1);
-US_LONG_NUMBER.setNationalNumber(65025300001);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var US_NUMBER = new i18n.phonenumbers.PhoneNumber();
-US_NUMBER.setCountryCode(1);
-US_NUMBER.setNationalNumber(6502530000);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var US_PREMIUM = new i18n.phonenumbers.PhoneNumber();
-US_PREMIUM.setCountryCode(1);
-US_PREMIUM.setNationalNumber(9002530000);
-
-
-// Too short, but still possible US numbers.
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var US_LOCAL_NUMBER = new i18n.phonenumbers.PhoneNumber();
-US_LOCAL_NUMBER.setCountryCode(1);
-US_LOCAL_NUMBER.setNationalNumber(2530000);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var US_SHORT_BY_ONE_NUMBER = new i18n.phonenumbers.PhoneNumber();
-US_SHORT_BY_ONE_NUMBER.setCountryCode(1);
-US_SHORT_BY_ONE_NUMBER.setNationalNumber(650253000);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var US_TOLLFREE = new i18n.phonenumbers.PhoneNumber();
-US_TOLLFREE.setCountryCode(1);
-US_TOLLFREE.setNationalNumber(8002530000);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var US_SPOOF = new i18n.phonenumbers.PhoneNumber();
-US_SPOOF.setCountryCode(1);
-US_SPOOF.setNationalNumber(0);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var US_SPOOF_WITH_RAW_INPUT = new i18n.phonenumbers.PhoneNumber();
-US_SPOOF_WITH_RAW_INPUT.setCountryCode(1);
-US_SPOOF_WITH_RAW_INPUT.setNationalNumber(0);
-US_SPOOF_WITH_RAW_INPUT.setRawInput('000-000-0000');
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var INTERNATIONAL_TOLL_FREE = new i18n.phonenumbers.PhoneNumber();
-INTERNATIONAL_TOLL_FREE.setCountryCode(800);
-INTERNATIONAL_TOLL_FREE.setNationalNumber(12345678);
-
-
-// We set this to be the same length as numbers for the other non-geographical
-// country prefix that we have in our test metadata. However, this is not
-// considered valid because they differ in their country calling code.
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var INTERNATIONAL_TOLL_FREE_TOO_LONG = new i18n.phonenumbers.PhoneNumber();
-INTERNATIONAL_TOLL_FREE_TOO_LONG.setCountryCode(800);
-INTERNATIONAL_TOLL_FREE_TOO_LONG.setNationalNumber(123456789);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var UNIVERSAL_PREMIUM_RATE = new i18n.phonenumbers.PhoneNumber();
-UNIVERSAL_PREMIUM_RATE.setCountryCode(979);
-UNIVERSAL_PREMIUM_RATE.setNationalNumber(123456789);
-
-
-/** @type {i18n.phonenumbers.PhoneNumber} */
-var UNKNOWN_COUNTRY_CODE_NO_RAW_INPUT = new i18n.phonenumbers.PhoneNumber();
-UNKNOWN_COUNTRY_CODE_NO_RAW_INPUT.setCountryCode(2);
-UNKNOWN_COUNTRY_CODE_NO_RAW_INPUT.setNationalNumber(12345);
-
-var RegionCode = i18n.phonenumbers.RegionCode;
-
-function testGetInstanceLoadUSMetadata() {
-  /** @type {i18n.phonenumbers.PhoneMetadata} */
-  var metadata = phoneUtil.getMetadataForRegion(RegionCode.US);
-  assertEquals(RegionCode.US, metadata.getId());
-  assertEquals(1, metadata.getCountryCode());
-  assertEquals('011', metadata.getInternationalPrefix());
-  assertTrue(metadata.hasNationalPrefix());
-  assertEquals(2, metadata.numberFormatCount());
-  assertEquals('(\\d{3})(\\d{3})(\\d{4})',
-               metadata.getNumberFormat(1).getPattern());
-  assertEquals('$1 $2 $3', metadata.getNumberFormat(1).getFormat());
-  assertEquals('[13-689]\\d{9}|2[0-35-9]\\d{8}',
-               metadata.getGeneralDesc().getNationalNumberPattern());
-  assertEquals('[13-689]\\d{9}|2[0-35-9]\\d{8}',
-               metadata.getFixedLine().getNationalNumberPattern());
-  assertEquals('900\\d{7}',
-               metadata.getPremiumRate().getNationalNumberPattern());
-  // No shared-cost data is available, so it should be initialised to 'NA'.
-  assertEquals('NA', metadata.getSharedCost().getNationalNumberPattern());
-}
-
-function testGetInstanceLoadDEMetadata() {
-  /** @type {i18n.phonenumbers.PhoneMetadata} */
-  var metadata = phoneUtil.getMetadataForRegion(RegionCode.DE);
-  assertEquals(RegionCode.DE, metadata.getId());
-  assertEquals(49, metadata.getCountryCode());
-  assertEquals('00', metadata.getInternationalPrefix());
-  assertEquals('0', metadata.getNationalPrefix());
-  assertEquals(6, metadata.numberFormatCount());
-  assertEquals(1, metadata.getNumberFormat(5).leadingDigitsPatternCount());
-  assertEquals('900', metadata.getNumberFormat(5).getLeadingDigitsPattern(0));
-  assertEquals('(\\d{3})(\\d{3,4})(\\d{4})',
-               metadata.getNumberFormat(5).getPattern());
-  assertEquals('$1 $2 $3', metadata.getNumberFormat(5).getFormat());
-  assertEquals('(?:[24-6]\\d{2}|3[03-9]\\d|[789](?:0[2-9]|[1-9]\\d))\\d{1,8}',
-               metadata.getFixedLine().getNationalNumberPattern());
-  assertEquals('30123456', metadata.getFixedLine().getExampleNumber());
-  assertEquals('900([135]\\d{6}|9\\d{7})',
-               metadata.getPremiumRate().getNationalNumberPattern());
-}
-
-function testGetInstanceLoadARMetadata() {
-  /** @type {i18n.phonenumbers.PhoneMetadata} */
-  var metadata = phoneUtil.getMetadataForRegion(RegionCode.AR);
-  assertEquals(RegionCode.AR, metadata.getId());
-  assertEquals(54, metadata.getCountryCode());
-  assertEquals('00', metadata.getInternationalPrefix());
-  assertEquals('0', metadata.getNationalPrefix());
-  assertEquals('0(?:(11|343|3715)15)?', metadata.getNationalPrefixForParsing());
-  assertEquals('9$1', metadata.getNationalPrefixTransformRule());
-  assertEquals('$2 15 $3-$4', metadata.getNumberFormat(2).getFormat());
-  assertEquals('(9)(\\d{4})(\\d{2})(\\d{4})',
-               metadata.getNumberFormat(3).getPattern());
-  assertEquals('(9)(\\d{4})(\\d{2})(\\d{4})',
-               metadata.getIntlNumberFormat(3).getPattern());
-  assertEquals('$1 $2 $3 $4', metadata.getIntlNumberFormat(3).getFormat());
-}
-
-function testGetInstanceLoadInternationalTollFreeMetadata() {
-  /** @type {i18n.phonenumbers.PhoneMetadata} */
-  var metadata = phoneUtil.getMetadataForNonGeographicalRegion(800);
-  assertEquals('001', metadata.getId());
-  assertEquals(800, metadata.getCountryCode());
-  assertEquals('$1 $2', metadata.getNumberFormat(0).getFormat());
-  assertEquals('(\\d{4})(\\d{4})', metadata.getNumberFormat(0).getPattern());
-  assertEquals(0, metadata.getGeneralDesc().possibleLengthLocalOnlyCount());
-  assertEquals(1, metadata.getGeneralDesc().possibleLengthCount());
-  assertEquals('12345678', metadata.getTollFree().getExampleNumber());
-}
-
-function testIsNumberGeographical() {
-  // Bahamas, mobile phone number.
-  assertFalse(phoneUtil.isNumberGeographical(BS_MOBILE));
-  // Australian fixed line number.
-  assertTrue(phoneUtil.isNumberGeographical(AU_NUMBER));
-  // International toll free number.
-  assertFalse(phoneUtil.isNumberGeographical(INTERNATIONAL_TOLL_FREE));
-  // We test that mobile phone numbers in relevant regions are indeed considered
-  // geographical.
-  // Argentina, mobile phone number.
-  assertTrue(phoneUtil.isNumberGeographical(AR_MOBILE));
-  // Mexico, mobile phone number.
-  assertTrue(phoneUtil.isNumberGeographical(MX_MOBILE1));
-  // Mexico, another mobile phone number.
-  assertTrue(phoneUtil.isNumberGeographical(MX_MOBILE2));
-}
-
-function testIsLeadingZeroPossible() {
-  // Italy
-  assertTrue(phoneUtil.isLeadingZeroPossible(39));
-  // USA
-  assertFalse(phoneUtil.isLeadingZeroPossible(1));
-  // International toll free
-  assertTrue(phoneUtil.isLeadingZeroPossible(800));
-  // International premium-rate
-  assertFalse(phoneUtil.isLeadingZeroPossible(979));
-  // Not in metadata file, just default to false.
-  assertFalse(phoneUtil.isLeadingZeroPossible(888));
-}
-
-function testGetLengthOfGeographicalAreaCode() {
-  // Google MTV, which has area code '650'.
-  assertEquals(3, phoneUtil.getLengthOfGeographicalAreaCode(US_NUMBER));
-
-  // A North America toll-free number, which has no area code.
-  assertEquals(0, phoneUtil.getLengthOfGeographicalAreaCode(US_TOLLFREE));
-
-  // Google London, which has area code '20'.
-  assertEquals(2, phoneUtil.getLengthOfGeographicalAreaCode(GB_NUMBER));
-
-  // A UK mobile phone, which has no area code.
-  assertEquals(0, phoneUtil.getLengthOfGeographicalAreaCode(GB_MOBILE));
-
-  // Google Buenos Aires, which has area code '11'.
-  assertEquals(2, phoneUtil.getLengthOfGeographicalAreaCode(AR_NUMBER));
-
-  // Google Sydney, which has area code '2'.
-  assertEquals(1, phoneUtil.getLengthOfGeographicalAreaCode(AU_NUMBER));
-
-  // Italian numbers - there is no national prefix, but it still has an area
-  // code.
-  assertEquals(2, phoneUtil.getLengthOfGeographicalAreaCode(IT_NUMBER));
-
-  // Google Singapore. Singapore has no area code and no national prefix.
-  assertEquals(0, phoneUtil.getLengthOfGeographicalAreaCode(SG_NUMBER));
-
-  // An invalid US number (1 digit shorter), which has no area code.
-  assertEquals(0,
-      phoneUtil.getLengthOfGeographicalAreaCode(US_SHORT_BY_ONE_NUMBER));
-
-  // An international toll free number, which has no area code.
-  assertEquals(0,
-      phoneUtil.getLengthOfGeographicalAreaCode(INTERNATIONAL_TOLL_FREE));
-}
-
-function testGetLengthOfNationalDestinationCode() {
-  // Google MTV, which has national destination code (NDC) '650'.
-  assertEquals(3, phoneUtil.getLengthOfNationalDestinationCode(US_NUMBER));
-
-  // A North America toll-free number, which has NDC '800'.
-  assertEquals(3, phoneUtil.getLengthOfNationalDestinationCode(US_TOLLFREE));
-
-  // Google London, which has NDC '20'.
-  assertEquals(2, phoneUtil.getLengthOfNationalDestinationCode(GB_NUMBER));
-
-  // A UK mobile phone, which has NDC '7912'.
-  assertEquals(4, phoneUtil.getLengthOfNationalDestinationCode(GB_MOBILE));
-
-  // Google Buenos Aires, which has NDC '11'.
-  assertEquals(2, phoneUtil.getLengthOfNationalDestinationCode(AR_NUMBER));
-
-  // An Argentinian mobile which has NDC '911'.
-  assertEquals(3, phoneUtil.getLengthOfNationalDestinationCode(AR_MOBILE));
-
-  // Google Sydney, which has NDC '2'.
-  assertEquals(1, phoneUtil.getLengthOfNationalDestinationCode(AU_NUMBER));
-
-  // Google Singapore, which has NDC '6521'.
-  assertEquals(4, phoneUtil.getLengthOfNationalDestinationCode(SG_NUMBER));
-
-  // An invalid US number (1 digit shorter), which has no NDC.
-  assertEquals(0,
-      phoneUtil.getLengthOfNationalDestinationCode(US_SHORT_BY_ONE_NUMBER));
-
-  // A number containing an invalid country calling code, which shouldn't have
-  // any NDC.
-  /** @type {i18n.phonenumbers.PhoneNumber} */
-  var number = new i18n.phonenumbers.PhoneNumber();
-  number.setCountryCode(123);
-  number.setNationalNumber(6502530000);
-  assertEquals(0, phoneUtil.getLengthOfNationalDestinationCode(number));
-
-  // An international toll free number, which has NDC '1234'.
-  assertEquals(4,
-      phoneUtil.getLengthOfNationalDestinationCode(INTERNATIONAL_TOLL_FREE));
-}
-
-function testGetCountryMobileToken() {
-  assertEquals('1', i18n.phonenumbers.PhoneNumberUtil.getCountryMobileToken(
-      phoneUtil.getCountryCodeForRegion(RegionCode.MX)));
-
-  // Country calling code for Sweden, which has no mobile token.
-  assertEquals('', i18n.phonenumbers.PhoneNumberUtil.getCountryMobileToken(
-      phoneUtil.getCountryCodeForRegion(RegionCode.SE)));
-}
-
-function testGetSupportedRegions() {
-  assertTrue(phoneUtil.getSupportedRegions().length > 0);
-  assertTrue(goog.array.contains(
-      phoneUtil.getSupportedRegions(), RegionCode.US));
-  assertFalse(goog.array.contains(
-      phoneUtil.getSupportedRegions(), RegionCode.UN001));
-  assertFalse(goog.array.contains(phoneUtil.getSupportedRegions(), '800'));
-}
-
-function testGetSupportedGlobalNetworkCallingCodes() {
-  assertTrue(phoneUtil.getSupportedGlobalNetworkCallingCodes().length > 0);
-  assertFalse(goog.array.contains(
-      phoneUtil.getSupportedGlobalNetworkCallingCodes(), RegionCode.US));
-  assertTrue(goog.array.contains(
-      phoneUtil.getSupportedGlobalNetworkCallingCodes(), 800));
-  goog.array.forEach(
-      phoneUtil.getSupportedGlobalNetworkCallingCodes(),
-      function(countryCallingCode) {
-        assertEquals(RegionCode.UN001,
-            phoneUtil.getRegionCodeForCountryCode(countryCallingCode));
-      });
-}
-
-function testGetNationalSignificantNumber() {
-  assertEquals('6502530000',
-      phoneUtil.getNationalSignificantNumber(US_NUMBER));
-
-  // An Italian mobile number.
-  assertEquals('345678901',
-      phoneUtil.getNationalSignificantNumber(IT_MOBILE));
-
-  // An Italian fixed line number.
-  assertEquals('0236618300',
-      phoneUtil.getNationalSignificantNumber(IT_NUMBER));
-
-  assertEquals('12345678',
-      phoneUtil.getNationalSignificantNumber(INTERNATIONAL_TOLL_FREE));
-}
-
-function testGetExampleNumber() {
-  var PNT = i18n.phonenumbers.PhoneNumberType;
-  assertTrue(DE_NUMBER.equals(phoneUtil.getExampleNumber(RegionCode.DE)));
-
-  assertTrue(DE_NUMBER.equals(
-      phoneUtil.getExampleNumberForType(RegionCode.DE, PNT.FIXED_LINE)));
-  assertNull(phoneUtil.getExampleNumberForType(RegionCode.DE, PNT.MOBILE));
-  assertNotNull(
-      phoneUtil.getExampleNumberForType(RegionCode.US, PNT.FIXED_LINE));
-  assertNotNull(phoneUtil.getExampleNumberForType(RegionCode.US, PNT.MOBILE));
-  // CS is an invalid region, so we have no data for it.
-  assertNull(phoneUtil.getExampleNumberForType(RegionCode.CS, PNT.MOBILE));
-  // RegionCode 001 is reserved for supporting non-geographical country calling
-  // code. We don't support getting an example number for it with this method.
-  assertNull(phoneUtil.getExampleNumber(RegionCode.UN001));
-}
-
-function testGetExampleNumberForNonGeoEntity() {
-  assertTrue(INTERNATIONAL_TOLL_FREE.equals(
-      phoneUtil.getExampleNumberForNonGeoEntity(800)));
-  assertTrue(UNIVERSAL_PREMIUM_RATE.equals(
-      phoneUtil.getExampleNumberForNonGeoEntity(979)));
-}
-
-function testConvertAlphaCharactersInNumber() {
-  /** @type {string} */
-  var input = '1800-ABC-DEF';
-  // Alpha chars are converted to digits; everything else is left untouched.
-  /** @type {string} */
-  var expectedOutput = '1800-222-333';
-  assertEquals(expectedOutput,
-      i18n.phonenumbers.PhoneNumberUtil.convertAlphaCharactersInNumber(input));
-}
-
-function testNormaliseRemovePunctuation() {
-  /** @type {string} */
-  var inputNumber = '034-56&+#2\u00AD34';
-  /** @type {string} */
-  var expectedOutput = '03456234';
-  assertEquals('Conversion did not correctly remove punctuation',
-      expectedOutput,
-      i18n.phonenumbers.PhoneNumberUtil.normalize(inputNumber));
-}
-
-function testNormaliseReplaceAlphaCharacters() {
-  /** @type {string} */
-  var inputNumber = '034-I-am-HUNGRY';
-  /** @type {string} */
-  var expectedOutput = '034426486479';
-  assertEquals('Conversion did not correctly replace alpha characters',
-      expectedOutput,
-      i18n.phonenumbers.PhoneNumberUtil.normalize(inputNumber));
-}
-
-function testNormaliseOtherDigits() {
-  /** @type {string} */
-  var inputNumber = '\uFF125\u0665';
-  /** @type {string} */
-  var expectedOutput = '255';
-  assertEquals('Conversion did not correctly replace non-latin digits',
-      expectedOutput,
-      i18n.phonenumbers.PhoneNumberUtil.normalize(inputNumber));
-  // Eastern-Arabic digits.
-  inputNumber = '\u06F52\u06F0';
-  expectedOutput = '520';
-  assertEquals('Conversion did not correctly replace non-latin digits',
-      expectedOutput,
-      i18n.phonenumbers.PhoneNumberUtil.normalize(inputNumber));
-}
-
-function testNormaliseStripAlphaCharacters() {
-  /** @type {string} */
-  var inputNumber = '034-56&+a#234';
-  /** @type {string} */
-  var expectedOutput = '03456234';
-  assertEquals('Conversion did not correctly remove alpha character',
-      expectedOutput,
-      i18n.phonenumbers.PhoneNumberUtil.normalizeDigitsOnly(inputNumber));
-}
-
-function testNormaliseStripNonDiallableCharacters() {
-  /** @type {string} */
-  var inputNumber = '03*4-56&+1a#234';
-  /** @type {string} */
-  var expectedOutput = '03*456+1#234';
-  assertEquals('Conversion did not correctly remove non-diallable characters',
-               expectedOutput,
-               i18n.phonenumbers.PhoneNumberUtil.normalizeDiallableCharsOnly(
-                   inputNumber));
+);
 }
 
 function testFormatUSNumber() {
@@ -2995,6 +2439,426 @@ function testParseAndKeepRaw() {
       phoneUtil.parseAndKeepRawInput('800 six-flags', RegionCode.US)));
 
   /** @type {i18n.phonenumbers.PhoneNumber} */
+  var shorterAlphaNumber = new i18n.phonenumbers.PhoneNumber();
+  shorterAlphaNumber.setCountryCode(1);
+  shorterAlphaNumber.setNationalNumber(8007493524);
+  shorterAlphaNumber.setRawInput('1800 six-flag');
+  shorterAlphaNumber.setCountryCodeSource(CCS.FROM_NUMBER_WITHOUT_PLUS_SIGN);
+  assertTrue(shorterAlphaNumber.equals(
+      phoneUtil.parseAndKeepRawInput('1800 six-flag', RegionCode.US)));
+
+  shorterAlphaNumber.setRawInput('+1800 six-flag');
+  shorterAlphaNumber.setCountryCodeSource(CCS.FROM_NUMBER_WITH_PLUS_SIGN);
+  assertTrue(shorterAlphaNumber.equals(
+      phoneUtil.parseAndKeepRawInput('+1800 six-flag', RegionCode.NZ)));
+
+  alphaNumericNumber.setCountryCode(1);
+  alphaNumericNumber.setNationalNumber(8007493524);
+  alphaNumericNumber.setRawInput('001800 six-flag');
+  alphaNumericNumber.setCountryCodeSource(CCS.FROM_NUMBER_WITH_IDD);
+  assertTrue(alphaNumericNumber.equals(
+      phoneUtil.parseAndKeepRawInput('001800 six-flag', RegionCode.NZ)));
+
+  // Invalid region code supplied.
+  try {
+    phoneUtil.parseAndKeepRawInput('123 456 7890', RegionCode.CS);
+    fail('Deprecated region code not allowed: should fail.');
+  } catch (e) {
+    // Expected this exception.
+    assertEquals('Wrong error type stored in exception.',
+                 i18n.phonenumbers.Error.INVALID_COUNTRY_CODE,
+                 e.message);
+  }
+
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var koreanNumber = new i18n.phonenumbers.PhoneNumber();
+  koreanNumber.setCountryCode(82);
+  koreanNumber.setNationalNumber(22123456);
+  koreanNumber.setRawInput('08122123456');
+  koreanNumber.setCountryCodeSource(CCS.FROM_DEFAULT_COUNTRY);
+  koreanNumber.setPreferredDomesticCarrierCode('81');
+  assertTrue(koreanNumber.equals(
+      phoneUtil.parseAndKeepRawInput('08122123456', RegionCode.KR)));
+}
+
+function testParseItalianLeadingZeros() {
+  // Test the number "011".
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var oneZero = new i18n.phonenumbers.PhoneNumber();
+  oneZero.setCountryCode(61);
+  oneZero.setNationalNumber(11);
+  oneZero.setItalianLeadingZero(true);
+  assertTrue(oneZero.equals(phoneUtil.parse('011', RegionCode.AU)));
+
+  // Test the number "001".
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var twoZeros = new i18n.phonenumbers.PhoneNumber();
+  twoZeros.setCountryCode(61);
+  twoZeros.setNationalNumber(1);
+  twoZeros.setItalianLeadingZero(true);
+  twoZeros.setNumberOfLeadingZeros(2);
+  assertTrue(twoZeros.equals(phoneUtil.parse('001', RegionCode.AU)));
+
+  // Test the number "000". This number has 2 leading zeros.
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var stillTwoZeros = new i18n.phonenumbers.PhoneNumber();
+  stillTwoZeros.setCountryCode(61);
+  stillTwoZeros.setNationalNumber(0);
+  stillTwoZeros.setItalianLeadingZero(true);
+  stillTwoZeros.setNumberOfLeadingZeros(2);
+  assertTrue(stillTwoZeros.equals(phoneUtil.parse('000', RegionCode.AU)));
+
+  // Test the number "0000". This number has 3 leading zeros.
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var threeZeros = new i18n.phonenumbers.PhoneNumber();
+  threeZeros.setCountryCode(61);
+  threeZeros.setNationalNumber(0);
+  threeZeros.setItalianLeadingZero(true);
+  threeZeros.setNumberOfLeadingZeros(3);
+  assertTrue(threeZeros.equals(phoneUtil.parse('0000', RegionCode.AU)));
+}
+
+function testCountryWithNoNumberDesc() {
+  var PNF = i18n.phonenumbers.PhoneNumberFormat;
+  var PNT = i18n.phonenumbers.PhoneNumberType;
+  // Andorra is a country where we don't have PhoneNumberDesc info in the
+  // metadata.
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var adNumber = new i18n.phonenumbers.PhoneNumber();
+  adNumber.setCountryCode(376);
+  adNumber.setNationalNumber(12345);
+  assertEquals('+376 12345', phoneUtil.format(adNumber, PNF.INTERNATIONAL));
+  assertEquals('+37612345', phoneUtil.format(adNumber, PNF.E164));
+  assertEquals('12345', phoneUtil.format(adNumber, PNF.NATIONAL));
+  assertEquals(PNT.UNKNOWN, phoneUtil.getNumberType(adNumber));
+  assertFalse(phoneUtil.isValidNumber(adNumber));
+
+  // Test dialing a US number from within Andorra.
+  assertEquals('00 1 650 253 0000',
+               phoneUtil.formatOutOfCountryCallingNumber(US_NUMBER,
+                                                         RegionCode.AD));
+}
+
+function testUnknownCountryCallingCode() {
+  var PNF = i18n.phonenumbers.PhoneNumberFormat;
+  assertFalse(phoneUtil.isValidNumber(UNKNOWN_COUNTRY_CODE_NO_RAW_INPUT));
+  // It's not very well defined as to what the E164 representation for a number
+  // with an invalid country calling code is, but just prefixing the country
+  // code and national number is about the best we can do.
+  assertEquals('+212345',
+               phoneUtil.format(UNKNOWN_COUNTRY_CODE_NO_RAW_INPUT, PNF.E164));
+}
+
+function testIsNumberMatchMatches() {
+  // Test simple matches where formatting is different, or leading zeros, or
+  // country calling code has been specified.
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var num1 = phoneUtil.parse('+64 3 331 6005', RegionCode.NZ);
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var num2 = phoneUtil.parse('+64 03 331 6005', RegionCode.NZ);
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch(num1, num2));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch('+64 3 331 6005', '+64 03 331 6005'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch('+800 1234 5678', '+80012345678'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch('+64 03 331-6005', '+64 03331 6005'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch('+643 331-6005', '+64033316005'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch('+643 331-6005', '+6433316005'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch('+64 3 331-6005', '+6433316005'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch('+64 3 331-6005',
+                                       'tel:+64-3-331-6005;isub=123'));
+  // Test alpha numbers.
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch('+1800 siX-Flags', '+1 800 7493 5247'));
+  // Test numbers with extensions.
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch('+64 3 331-6005 extn 1234',
+                                       '+6433316005#1234'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch('+64 3 331-6005 ext. 1234',
+                                       '+6433316005;1234'));
+  // Test proto buffers.
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch(NZ_NUMBER, '+6403 331 6005'));
+
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var nzNumber = NZ_NUMBER.clone();
+  nzNumber.setExtension('3456');
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch(nzNumber, '+643 331 6005 ext 3456'));
+  // Check empty extensions are ignored.
+  nzNumber.setExtension('');
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch(nzNumber, '+6403 331 6005'));
+  // Check variant with two proto buffers.
+  assertEquals('Numbers did not match',
+               i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch(nzNumber, NZ_NUMBER));
+}
+
+function testIsNumberMatchShortMatchIfDiffNumLeadingZeros() {
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var nzNumberOne = new i18n.phonenumbers.PhoneNumber();
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var nzNumberTwo = new i18n.phonenumbers.PhoneNumber();
+
+  nzNumberOne.setCountryCode(64);
+  nzNumberOne.setNationalNumber(33316005);
+  nzNumberOne.setItalianLeadingZero(true);
+
+  nzNumberTwo.setCountryCode(64);
+  nzNumberTwo.setNationalNumber(33316005);
+  nzNumberTwo.setItalianLeadingZero(true);
+  nzNumberTwo.setNumberOfLeadingZeros(2);
+
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch(nzNumberOne, nzNumberTwo));
+
+  nzNumberOne.setItalianLeadingZero(false);
+  nzNumberOne.setNumberOfLeadingZeros(1);
+  nzNumberTwo.setItalianLeadingZero(true);
+  nzNumberTwo.setNumberOfLeadingZeros(1);
+  // Since one doesn't have the "italian_leading_zero" set to true, we ignore
+  // the number of leading zeros present (1 is in any case the default value).
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch(nzNumberOne, nzNumberTwo));
+}
+
+function testIsNumberMatchAcceptsProtoDefaultsAsMatch() {
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var nzNumberOne = new i18n.phonenumbers.PhoneNumber();
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var nzNumberTwo = new i18n.phonenumbers.PhoneNumber();
+
+  nzNumberOne.setCountryCode(64);
+  nzNumberOne.setNationalNumber(33316005);
+  nzNumberOne.setItalianLeadingZero(true);
+
+  // The default for number_of_leading_zeros is 1, so it shouldn't normally be
+  // set, however if it is it should be considered equivalent.
+  nzNumberTwo.setCountryCode(64);
+  nzNumberTwo.setNationalNumber(33316005);
+  nzNumberTwo.setItalianLeadingZero(true);
+  nzNumberTwo.setNumberOfLeadingZeros(1);
+
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch(nzNumberOne, nzNumberTwo));
+}
+
+function testIsNumberMatchMatchesDiffLeadingZerosIfItalianLeadingZeroFalse() {
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var nzNumberOne = new i18n.phonenumbers.PhoneNumber();
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var nzNumberTwo = new i18n.phonenumbers.PhoneNumber();
+
+  nzNumberOne.setCountryCode(64);
+  nzNumberOne.setNationalNumber(33316005);
+
+  // The default for number_of_leading_zeros is 1, so it shouldn't normally be
+  // set, however if it is it should be considered equivalent.
+  nzNumberTwo.setCountryCode(64);
+  nzNumberTwo.setNationalNumber(33316005);
+  nzNumberTwo.setNumberOfLeadingZeros(1);
+
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch(nzNumberOne, nzNumberTwo));
+
+  // Even if it is set to ten, it is still equivalent because in both cases
+  // italian_leading_zero is not true.
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch(nzNumberOne, nzNumberTwo));
+}
+
+function testIsNumberMatchIgnoresSomeFields() {
+  var CCS = i18n.phonenumbers.PhoneNumber.CountryCodeSource;
+  // Check raw_input, country_code_source and preferred_domestic_carrier_code
+  // are ignored.
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var brNumberOne = new i18n.phonenumbers.PhoneNumber();
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var brNumberTwo = new i18n.phonenumbers.PhoneNumber();
+  brNumberOne.setCountryCode(55);
+  brNumberOne.setNationalNumber(3121286979);
+  brNumberOne.setCountryCodeSource(CCS.FROM_NUMBER_WITH_PLUS_SIGN);
+  brNumberOne.setPreferredDomesticCarrierCode('12');
+  brNumberOne.setRawInput('012 3121286979');
+  brNumberTwo.setCountryCode(55);
+  brNumberTwo.setNationalNumber(3121286979);
+  brNumberTwo.setCountryCodeSource(CCS.FROM_DEFAULT_COUNTRY);
+  brNumberTwo.setPreferredDomesticCarrierCode('14');
+  brNumberTwo.setRawInput('143121286979');
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.EXACT_MATCH,
+               phoneUtil.isNumberMatch(brNumberOne, brNumberTwo));
+}
+
+function testIsNumberMatchNonMatches() {
+  // Non-matches.
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NO_MATCH,
+               phoneUtil.isNumberMatch('03 331 6005', '03 331 6006'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NO_MATCH,
+               phoneUtil.isNumberMatch('+800 1234 5678', '+1 800 1234 5678'));
+  // Different country calling code, partial number match.
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NO_MATCH,
+               phoneUtil.isNumberMatch('+64 3 331-6005', '+16433316005'));
+  // Different country calling code, same number.
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NO_MATCH,
+               phoneUtil.isNumberMatch('+64 3 331-6005', '+6133316005'));
+  // Extension different, all else the same.
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NO_MATCH,
+               phoneUtil.isNumberMatch('+64 3 331-6005 extn 1234',
+                                       '0116433316005#1235'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NO_MATCH,
+               phoneUtil.isNumberMatch('+64 3 331-6005 extn 1234',
+                                       'tel:+64-3-331-6005;ext=1235'));
+  // NSN matches, but extension is different - not the same number.
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NO_MATCH,
+               phoneUtil.isNumberMatch('+64 3 331-6005 ext.1235',
+                                       '3 331 6005#1234'));
+
+  // Invalid numbers that can't be parsed.
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NOT_A_NUMBER,
+               phoneUtil.isNumberMatch('4', '3 331 6043'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NOT_A_NUMBER,
+               phoneUtil.isNumberMatch('+43', '+64 3 331 6005'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NOT_A_NUMBER,
+               phoneUtil.isNumberMatch('+43', '64 3 331 6005'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NOT_A_NUMBER,
+               phoneUtil.isNumberMatch('Dog', '64 3 331 6005'));
+}
+
+function testIsNumberMatchNsnMatches() {
+  // NSN matches.
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NSN_MATCH,
+               phoneUtil.isNumberMatch('+64 3 331-6005', '03 331 6005'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NSN_MATCH,
+               phoneUtil.isNumberMatch('+64 3 331-6005',
+               'tel:03-331-6005;isub=1234;phone-context=abc.nz'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NSN_MATCH,
+               phoneUtil.isNumberMatch(NZ_NUMBER, '03 331 6005'));
+  // Here the second number possibly starts with the country calling code for
+  // New Zealand, although we are unsure.
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var unchangedNzNumber = NZ_NUMBER.clone();
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NSN_MATCH,
+               phoneUtil.isNumberMatch(unchangedNzNumber, '(64-3) 331 6005'));
+  // Check the phone number proto was not edited during the method call.
+  assertTrue(NZ_NUMBER.equals(unchangedNzNumber));
+
+  // Here, the 1 might be a national prefix, if we compare it to the US number,
+  // so the resultant match is an NSN match.
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NSN_MATCH,
+               phoneUtil.isNumberMatch(US_NUMBER, '1-650-253-0000'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NSN_MATCH,
+               phoneUtil.isNumberMatch(US_NUMBER, '6502530000'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NSN_MATCH,
+               phoneUtil.isNumberMatch('+1 650-253 0000', '1 650 253 0000'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NSN_MATCH,
+               phoneUtil.isNumberMatch('1 650-253 0000', '1 650 253 0000'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.NSN_MATCH,
+               phoneUtil.isNumberMatch('1 650-253 0000', '+1 650 253 0000'));
+  // For this case, the match will be a short NSN match, because we cannot
+  // assume that the 1 might be a national prefix, so don't remove it when
+  // parsing.
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var randomNumber = new i18n.phonenumbers.PhoneNumber();
+  randomNumber.setCountryCode(41);
+  randomNumber.setNationalNumber(6502530000);
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch(randomNumber, '1-650-253-0000'));
+}
+
+function testIsNumberMatchShortNsnMatches() {
+  // Short NSN matches with the country not specified for either one or both
+  // numbers.
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch('+64 3 331-6005', '331 6005'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch('+64 3 331-6005',
+                                       'tel:331-6005;phone-context=abc.nz'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch(
+                   '+64 3 331-6005',
+                   'tel:331-6005;isub=1234;phone-context=abc.nz'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch(
+                   '+64 3 331-6005',
+                   'tel:331-6005;isub=1234;phone-context=abc.nz;a=%A1'));
+  // We did not know that the '0' was a national prefix since neither number has
+  // a country code, so this is considered a SHORT_NSN_MATCH.
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch('3 331-6005', '03 331 6005'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch('3 331-6005', '331 6005'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch('3 331-6005',
+                                       'tel:331-6005;phone-context=abc.nz'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch('3 331-6005', '+64 331 6005'));
+  // Short NSN match with the country specified.
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch('03 331-6005', '331 6005'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch('1 234 345 6789', '345 6789'));
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch('+1 (234) 345 6789', '345 6789'));
+  // NSN matches, country calling code omitted for one number, extension missing
+  // for one.
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch('+64 3 331-6005', '3 331 6005#1234'));
+  // One has Italian leading zero, one does not.
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var italianNumberOne = new i18n.phonenumbers.PhoneNumber();
+  italianNumberOne.setCountryCode(39);
+  italianNumberOne.setNationalNumber(1234);
+  italianNumberOne.setItalianLeadingZero(true);
+  /** @type {i18n.phonenumbers.PhoneNumber} */
+  var italianNumberTwo = new i18n.phonenumbers.PhoneNumber();
+  italianNumberTwo.setCountryCode(39);
+  italianNumberTwo.setNationalNumber(1234);
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch(italianNumberOne, italianNumberTwo));
+  // One has an extension, the other has an extension of ''.
+  italianNumberOne.setExtension('1234');
+  italianNumberOne.clearItalianLeadingZero();
+  italianNumberTwo.setExtension('');
+  assertEquals(i18n.phonenumbers.PhoneNumberUtil.MatchType.SHORT_NSN_MATCH,
+               phoneUtil.isNumberMatch(italianNumberOne, italianNumberTwo));
+}
+
+function testCanBeInternationallyDialled() {
+  // We have no-international-dialling rules for the US in our test metadata
+  // that say that toll-free numbers cannot be dialled internationally.
+  assertFalse(phoneUtil.canBeInternationallyDialled(US_TOLLFREE));
+
+  // Normal US numbers can be internationally dialled.
+  assertTrue(phoneUtil.canBeInternationallyDialled(US_NUMBER));
+
+  // Invalid number.
+  assertTrue(phoneUtil.canBeInternationallyDialled(US_LOCAL_NUMBER));
+
+  // We have no data for NZ - should return true.
+  assertTrue(phoneUtil.canBeInternationallyDialled(NZ_NUMBER));
+  assertTrue(phoneUtil.canBeInternationallyDialled(INTERNATIONAL_TOLL_FREE));
+}
+
+function testIsAlphaNumber() {
+  assertTrue(phoneUtil.isAlphaNumber('1800 six-flags'));
+  assertTrue(phoneUtil.isAlphaNumber('1800 six-flags ext. 1234'));
+  assertTrue(phoneUtil.isAlphaNumber('+800 six-flags'));
+  assertTrue(phoneUtil.isAlphaNumber('180 six-flags'));
+  assertFalse(phoneUtil.isAlphaNumber('1800 123-1234'));
+  assertFalse(phoneUtil.isAlphaNumber('1 six-flags'));
+  assertFalse(phoneUtil.isAlphaNumber('18 six-flags'));
+  assertFalse(phoneUtil.isAlphaNumber('1800 123-1234 extension: 1234'));
+  assertFalse(phoneUtil.isAlphaNumber('+800 1234-1234'));
+}
+8n.phonenumbers.PhoneNumber} */
   var shorterAlphaNumber = new i18n.phonenumbers.PhoneNumber();
   shorterAlphaNumber.setCountryCode(1);
   shorterAlphaNumber.setNationalNumber(8007493524);

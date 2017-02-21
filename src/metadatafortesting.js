@@ -1,64 +1,4 @@
-/**
- * @license
- * Copyright (C) 2010 The Libphonenumber Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/**
- * @fileoverview Generated metadata for file
- * ../resources/PhoneNumberMetadataForTesting.xml
- * @author Nikolaos Trogkanis
- */
-
-goog.provide('i18n.phonenumbers.metadata');
-
-/**
- * A mapping from a country calling code to the region codes which denote the
- * region represented by that country calling code. In the case of multiple
- * countries sharing a calling code, such as the NANPA regions, the one
- * indicated with "isMainCountryForCode" in the metadata should be first.
- * @type {!Object.<number, Array.<string>>}
- */
-i18n.phonenumbers.metadata.countryCodeToRegionCodeMap = {
-1:["US","BB","BS","CA"]
-,33:["FR"]
-,36:["HU"]
-,39:["IT"]
-,44:["GB","GG"]
-,46:["SE"]
-,48:["PL"]
-,49:["DE"]
-,52:["MX"]
-,54:["AR"]
-,55:["BR"]
-,61:["AU","CC","CX"]
-,64:["NZ"]
-,65:["SG"]
-,81:["JP"]
-,82:["KR"]
-,86:["CN"]
-,244:["AO"]
-,262:["RE","YT"]
-,374:["AM"]
-,375:["BY"]
-,376:["AD"]
-,800:["001"]
-,971:["AE"]
-,979:["001"]
-};
-
-/**
+**
  * A mapping from a region code to the PhoneMetadata for that region.
  * @type {!Object.<string, Array>}
  */
@@ -899,6 +839,104 @@ i18n.phonenumbers.metadata.countryToMetadata = {
 ,"US":[,[,,"[13-689]\\d{9}|2[0-35-9]\\d{8}",,,,,,,[10]
 ,[7]
 ]
+,[,,"[13-689]\\d{9}|2[0-35-9]\\d{8}",,,,"1234567890"]
+,[,,"[13-689]\\d{9}|2[0-35-9]\\d{8}",,,,"1234567890"]
+,[,,"8(?:00|66|77|88)\\d{7}"]
+,[,,"900\\d{7}"]
+,[,,"NA",,,,,,,[-1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,"US",1,"011","1"," extn. ",,"1",,,1,[[,"(\\d{3})(\\d{4})","$1 $2",,,,1]
+,[,"(\\d{3})(\\d{3})(\\d{4})","$1 $2 $3",,,,1]
+]
+,[[,"(\\d{3})(\\d{3})(\\d{4})","$1 $2 $3",,,,1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,1,,[,,"800\\d{7}"]
+,[,,"NA",,,,,,,[-1]
+]
+,,,[,,"NA",,,,,,,[-1]
+]
+]
+,"YT":[,[,,"[268]\\d{8}",,,,,,,[9]
+]
+,[,,"2696[0-4]\\d{4}",,,,"269601234"]
+,[,,"639\\d{6}",,,,"639123456"]
+,[,,"80\\d{7}",,,,"801234567"]
+,[,,"NA",,,,,,,[-1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,"YT",262,"00","0",,,"0",,,,,,[,,"NA",,,,,,,[-1]
+]
+,,"269|639",[,,"NA",,,,,,,[-1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,,,[,,"NA",,,,,,,[-1]
+]
+]
+,"800":[,[,,"\\d{8}",,,,,,,[8]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,[,,"\\d{8}",,,,"12345678"]
+,[,,"NA",,,,,,,[-1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,"001",800,,,,,,,,1,[[,"(\\d{4})(\\d{4})","$1 $2"]
+]
+,,[,,"NA",,,,,,,[-1]
+]
+,,,[,,"NA",,,,,,,[-1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,1,,[,,"NA",,,,,,,[-1]
+]
+]
+,"979":[,[,,"\\d{9}",,,,,,,[9]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,[,,"\\d{9}",,,,"123456789"]
+,[,,"NA",,,,,,,[-1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,"001",979,,,,,,,,1,[[,"(\\d)(\\d{4})(\\d{4})","$1 $2 $3"]
+]
+,,[,,"NA",,,,,,,[-1]
+]
+,,,[,,"NA",,,,,,,[-1]
+]
+,[,,"NA",,,,,,,[-1]
+]
+,,,[,,"NA",,,,,,,[-1]
+]
+]
+};
 ,[,,"[13-689]\\d{9}|2[0-35-9]\\d{8}",,,,"1234567890"]
 ,[,,"[13-689]\\d{9}|2[0-35-9]\\d{8}",,,,"1234567890"]
 ,[,,"8(?:00|66|77|88)\\d{7}"]
